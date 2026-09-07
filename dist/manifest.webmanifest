@@ -1,0 +1,9 @@
+{
+  "name": "A Ying Tour",
+  "short_name": "A Ying Tour",
+  "start_url": "/a-ying-tour/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#ffffff",
+  "icons": []
+}
