@@ -295,14 +295,28 @@ export async function deleteActivity(
     }),
   })
 
+  const raw = await response.text()
+
   if (!response.ok) {
-    throw new Error(`API error: ${response.status}`)
+    throw new Error(
+      `HTTP ${response.status}: ${raw.slice(0, 300)}`,
+    )
   }
 
-  const result = await response.json()
+  let result: any
+
+  try {
+    result = JSON.parse(raw)
+  } catch {
+    throw new Error(
+      `後端沒有回傳 JSON：${raw.slice(0, 300)}`,
+    )
+  }
 
   if (result.ok === false) {
-    throw new Error(result.error || '刪除行程失敗')
+    throw new Error(
+      result.error || '刪除行程失敗',
+    )
   }
 
   return result

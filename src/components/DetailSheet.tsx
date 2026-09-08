@@ -426,8 +426,11 @@ export default function DetailSheet({
                     await onDeleteActivity()
                   } catch (error) {
                     console.error(error)
+
                     setSaveError(
-                      '刪除失敗，請確認網路後再試一次。',
+                      error instanceof Error
+                        ? error.message
+                        : '刪除失敗',
                     )
                   } finally {
                     setDeleting(false)
