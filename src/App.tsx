@@ -5,6 +5,9 @@ import TravelerPicker from './components/TravelerPicker'
 import {
   fetchTourData,
   loadCachedTourData,
+  saveCachedTourData,
+  updateActivity,
+  type EditableActivityFields,
   type TourData,
 } from './api'
 import {
@@ -228,6 +231,60 @@ export default function App() {
     }
   }
 
+  async function handleSaveActivity(
+    fields: EditableActivityFields,
+  ) {
+    if (!selectedActivity) return
+
+    await updateActivity(
+      selectedActivity.id,
+      fields,
+    )
+
+    const updatedActivity: Activity = {
+      ...selectedActivity,
+      date: fields.date,
+      time: fields.time || undefined,
+      duration:
+        fields.duration === ''
+          ? undefined
+          : fields.duration,
+      type: fields.type,
+      title: fields.title,
+      cost: fields.cost || undefined,
+      note: fields.note || undefined,
+    }
+
+    setSelectedActivity(updatedActivity)
+    setSelectedDate(updatedActivity.date)
+
+    setData((current) => {
+      if (!current) return current
+
+      const next: TourData = {
+        ...current,
+        activities: current.activities
+          .map((activity) =>
+            activity.id === updatedActivity.id
+              ? updatedActivity
+              : activity,
+          )
+          .sort((a, b) => {
+            if (a.date !== b.date) {
+              return a.date.localeCompare(b.date)
+            }
+
+            return (a.time ?? '99:99').localeCompare(
+              b.time ?? '99:99',
+            )
+          }),
+      }
+
+      saveCachedTourData(next)
+      return next
+    })
+  }
+
   void statusVersion
 
   return (
@@ -311,6 +368,7 @@ export default function App() {
         completed={selectedCompleted}
         syncing={syncing}
         onToggleCompleted={handleToggleCompleted}
+        onSaveActivity={handleSaveActivity}
         onClose={() => setSelectedActivity(null)}
       />
     </div>

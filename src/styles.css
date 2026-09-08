@@ -339,3 +339,116 @@ a { color: inherit; }
   background: #dcf5e5;
   color: #176c38;
 }
+
+.edit-activity-button {
+  width: 100%;
+  margin: 18px 0 10px;
+  padding: 14px 16px;
+  border-radius: 14px;
+  background: #17202a;
+  color: white;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.edit-form {
+  display: grid;
+  gap: 14px;
+  margin-top: 20px;
+}
+
+.edit-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.edit-field {
+  display: grid;
+  gap: 7px;
+  min-width: 0;
+}
+
+.edit-field span {
+  font-size: 0.82rem;
+  font-weight: 800;
+  color: #5c6977;
+}
+
+.edit-field input,
+.edit-field select,
+.edit-field textarea {
+  width: 100%;
+  min-width: 0;
+  border: 1px solid #dbe2e9;
+  border-radius: 13px;
+  padding: 12px 13px;
+  background: #f8fafc;
+  color: #17202a;
+  font: inherit;
+  font-size: 16px;
+  outline: none;
+}
+
+.edit-field textarea {
+  resize: vertical;
+}
+
+.edit-field input:focus,
+.edit-field select:focus,
+.edit-field textarea:focus {
+  border-color: #17202a;
+  background: white;
+}
+
+.edit-actions {
+  display: grid;
+  grid-template-columns: 1fr 2fr;
+  gap: 10px;
+  margin-top: 4px;
+}
+
+.cancel-edit-button,
+.save-edit-button {
+  min-height: 48px;
+  border-radius: 14px;
+  padding: 12px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.cancel-edit-button {
+  background: #edf1f5;
+  color: #53606e;
+}
+
+.save-edit-button {
+  background: #17202a;
+  color: white;
+}
+
+.cancel-edit-button:disabled,
+.save-edit-button:disabled {
+  opacity: 0.55;
+  cursor: default;
+}
+
+.save-hint {
+  margin: -4px 0 0;
+  text-align: center;
+  color: #7b8794;
+  font-size: 0.76rem;
+}
+
+.edit-error {
+  margin: 0;
+  color: #b42318;
+  font-size: 0.84rem;
+  font-weight: 700;
+}
+
+@media (max-width: 390px) {
+  .edit-row {
+    grid-template-columns: 1fr;
+  }
+}

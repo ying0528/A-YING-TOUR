@@ -210,3 +210,46 @@ export async function saveStatus(item: StatusItem) {
 
   return result
 }
+
+export type EditableActivityFields = {
+  date: string
+  time: string
+  duration: number | ''
+  type: ActivityType
+  title: string
+  cost: string
+  note: string
+}
+
+export async function updateActivity(
+  activityId: string,
+  fields: EditableActivityFields,
+) {
+  const response = await fetch(API_URL, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'text/plain;charset=utf-8',
+    },
+    body: JSON.stringify({
+      action: 'updateActivity',
+      activityId,
+      ...fields,
+    }),
+  })
+
+  if (!response.ok) {
+    throw new Error(`API error: ${response.status}`)
+  }
+
+  const result = await response.json()
+
+  if (result.ok === false) {
+    throw new Error(result.error || '更新行程失敗')
+  }
+
+  return result
+}
+
+export function saveCachedTourData(data: TourData) {
+  localStorage.setItem(CACHE_KEY, JSON.stringify(data))
+}
