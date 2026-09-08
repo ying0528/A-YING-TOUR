@@ -369,6 +369,18 @@ export default function DetailSheet({
     {renderTextWithLinks(place.intro)}
   </p>
 ) : null}
+{place.naverMap ? (
+  <p>
+    <strong>Naver Map：</strong>
+    <a
+      href={place.naverMap}
+      target="_blank"
+      rel="noreferrer"
+    >
+      開啟地圖
+    </a>
+  </p>
+) : null}
 
                 {place.address ? (
   <p>
@@ -430,10 +442,13 @@ export default function DetailSheet({
                         ) : null}
 
                         {step.note ? (
-                          <p className="muted small">
-                            {step.note}
-                          </p>
-                        ) : null}
+  <p
+    className="muted small"
+    style={{ whiteSpace: 'pre-wrap' }}
+  >
+    {renderTextWithLinks(step.note)}
+  </p>
+) : null}
                       </div>
                     </div>
                   ))}
