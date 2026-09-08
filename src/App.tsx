@@ -1,40 +1,138 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import ActivityCard from './components/ActivityCard'
 import DetailSheet from './components/DetailSheet'
 import TravelerPicker from './components/TravelerPicker'
-import { activities, places, routeSteps, tickets, travelers } from './data/mockData'
+import { fetchTourData, loadCachedTourData, type TourData } from './api'
 import type { Activity, Traveler } from './types'
 
-const dates = [
+const travelerStorageKey = 'a-ying-tour-traveler'
+
+const fallbackDates = [
   { date: '2026-09-09', label: '9/9', weekday: '三' },
   { date: '2026-09-10', label: '9/10', weekday: '四' },
   { date: '2026-09-11', label: '9/11', weekday: '五' },
   { date: '2026-09-12', label: '9/12', weekday: '六' },
 ]
 
-const storageKey = 'a-ying-tour-traveler'
+function weekday(date: string) {
+  const day = new Date(`${date}T12:00:00`).getDay()
+  return ['日', '一', '二', '三', '四', '五', '六'][day]
+}
 
-function loadTraveler(): Traveler | null {
-  const id = localStorage.getItem(storageKey)
-  return travelers.find((item) => item.id === id) ?? null
+function makeDates(activities: Activity[]) {
+  const unique = [...new Set(activities.map((item) => item.date))].sort()
+
+  if (!unique.length) return fallbackDates
+
+  return unique.map((date) => {
+    const [, month, day] = date.split('-')
+    return {
+      date,
+      label: `${Number(month)}/${Number(day)}`,
+      weekday: weekday(date),
+    }
+  })
 }
 
 export default function App() {
-  const [traveler, setTraveler] = useState<Traveler | null>(loadTraveler)
-  const [selectedDate, setSelectedDate] = useState(dates[0].date)
-  const [selectedActivity, setSelectedActivity] = useState<Activity | null>(null)
+  const cached = loadCachedTourData()
+
+  const [data, setData] = useState<TourData | null>(cached)
+  const [loading, setLoading] = useState(!cached)
+  const [error, setError] = useState('')
+  const [traveler, setTraveler] = useState<Traveler | null>(null)
+  const [selectedDate, setSelectedDate] = useState(
+    cached?.activities?.[0]?.date ?? fallbackDates[0].date,
+  )
+  const [selectedActivity, setSelectedActivity] =
+    useState<Activity | null>(null)
+
+  useEffect(() => {
+    let active = true
+
+    fetchTourData()
+      .then((fresh) => {
+        if (!active) return
+
+        setData(fresh)
+
+        if (!fresh.activities.some((item) => item.date === selectedDate)) {
+          setSelectedDate(
+            fresh.activities[0]?.date ?? fallbackDates[0].date,
+          )
+        }
+
+        setError('')
+      })
+      .catch((err) => {
+        console.error(err)
+
+        if (!cached && active) {
+          setError('目前無法取得行程資料，請稍後再試。')
+        }
+      })
+      .finally(() => {
+        if (active) setLoading(false)
+      })
+
+    return () => {
+      active = false
+    }
+  }, [])
+
+  useEffect(() => {
+    if (!data?.travelers?.length) return
+
+    const savedId = localStorage.getItem(travelerStorageKey)
+    const savedTraveler =
+      data.travelers.find((item) => item.id === savedId) ?? null
+
+    setTraveler(savedTraveler)
+  }, [data])
+
+  const dates = useMemo(
+    () => makeDates(data?.activities ?? []),
+    [data?.activities],
+  )
 
   const dayActivities = useMemo(
-    () => activities.filter((activity) => activity.date === selectedDate),
-    [selectedDate],
+    () =>
+      (data?.activities ?? []).filter(
+        (activity) => activity.date === selectedDate,
+      ),
+    [data?.activities, selectedDate],
   )
+
+  if (loading && !data) {
+    return (
+      <div className="app-shell">
+        <main className="content">
+          <p>正在讀取行程...</p>
+        </main>
+      </div>
+    )
+  }
+
+  if (error && !data) {
+    return (
+      <div className="app-shell">
+        <main className="content">
+          <h2>暫時無法載入</h2>
+          <p>{error}</p>
+          <button onClick={() => location.reload()}>重新整理</button>
+        </main>
+      </div>
+    )
+  }
+
+  if (!data) return null
 
   if (!traveler) {
     return (
       <TravelerPicker
-        travelers={travelers}
+        travelers={data.travelers}
         onSelect={(value) => {
-          localStorage.setItem(storageKey, value.id)
+          localStorage.setItem(travelerStorageKey, value.id)
           setTraveler(value)
         }}
       />
@@ -42,15 +140,17 @@ export default function App() {
   }
 
   const selectedPlace = selectedActivity?.placeId
-    ? places.find((place) => place.id === selectedActivity.placeId)
+    ? data.places.find((place) => place.id === selectedActivity.placeId)
     : undefined
 
   const selectedRouteSteps = selectedActivity?.routeId
-    ? routeSteps.filter((step) => step.routeId === selectedActivity.routeId)
+    ? data.routeSteps.filter(
+        (step) => step.routeId === selectedActivity.routeId,
+      )
     : []
 
   const selectedTickets = selectedActivity
-    ? tickets.filter(
+    ? data.tickets.filter(
         (ticket) =>
           ticket.activityId === selectedActivity.id &&
           ticket.travelerId === traveler.id,
@@ -62,12 +162,13 @@ export default function App() {
       <header className="topbar">
         <div>
           <p className="eyebrow">A YING TOUR</p>
-          <h1>釜山窮遊之旅</h1>
+          <h1>{data.tripName}</h1>
         </div>
+
         <button
           className="traveler-chip"
           onClick={() => {
-            localStorage.removeItem(storageKey)
+            localStorage.removeItem(travelerStorageKey)
             setTraveler(null)
           }}
         >
@@ -79,7 +180,11 @@ export default function App() {
         {dates.map((item) => (
           <button
             key={item.date}
-            className={selectedDate === item.date ? 'date-tab active' : 'date-tab'}
+            className={
+              selectedDate === item.date
+                ? 'date-tab active'
+                : 'date-tab'
+            }
             onClick={() => setSelectedDate(item.date)}
           >
             <strong>{item.label}</strong>
@@ -92,18 +197,25 @@ export default function App() {
         <div className="day-heading">
           <div>
             <p className="eyebrow">BUSAN 2026</p>
-            <h2>{dates.find((item) => item.date === selectedDate)?.label} 行程</h2>
+            <h2>
+              {dates.find((item) => item.date === selectedDate)?.label}{' '}
+              行程
+            </h2>
           </div>
-          <span className="count-badge">{dayActivities.length} 項</span>
+
+          <span className="count-badge">
+            {dayActivities.length} 項
+          </span>
         </div>
 
         <div className="timeline">
           {dayActivities.map((activity) => {
-            const hasTicket = tickets.some(
+            const hasTicket = data.tickets.some(
               (ticket) =>
                 ticket.activityId === activity.id &&
                 ticket.travelerId === traveler.id,
             )
+
             return (
               <ActivityCard
                 key={activity.id}
