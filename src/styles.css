@@ -482,3 +482,24 @@ a { color: inherit; }
     justify-items: end;
   }
 }
+
+.delete-section {
+  margin-top: 26px;
+}
+
+.delete-activity-button {
+  width: 100%;
+  min-height: 48px;
+  padding: 13px 16px;
+  border-radius: 14px;
+  background: #fff1f0;
+  color: #b42318;
+  border: 1px solid #f4c7c3;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.delete-activity-button:disabled {
+  opacity: 0.55;
+  cursor: default;
+}

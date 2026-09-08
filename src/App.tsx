@@ -5,6 +5,7 @@ import AddActivitySheet from './components/AddActivitySheet'
 import TravelerPicker from './components/TravelerPicker'
 import {
   createActivity,
+  deleteActivity,
   fetchTourData,
   loadCachedTourData,
   saveCachedTourData,
@@ -231,6 +232,31 @@ export default function App() {
     })
   }
 
+  async function handleDeleteActivity() {
+    if (!selectedActivity) return
+
+    const activityId = selectedActivity.id
+
+    await deleteActivity(activityId)
+
+    setSelectedActivity(null)
+
+    setData((current) => {
+      if (!current) return current
+
+      const next: TourData = {
+        ...current,
+        activities: current.activities.filter(
+          (activity) =>
+            activity.id !== activityId,
+        ),
+      }
+
+      saveCachedTourData(next)
+      return next
+    })
+  }
+
   async function handleCreateActivity(
     fields: EditableActivityFields,
   ) {
@@ -366,6 +392,7 @@ export default function App() {
         routeSteps={selectedRouteSteps}
         tickets={selectedTickets}
         onSaveActivity={handleSaveActivity}
+        onDeleteActivity={handleDeleteActivity}
         onClose={() => setSelectedActivity(null)}
       />
 

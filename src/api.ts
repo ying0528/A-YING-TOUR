@@ -280,3 +280,30 @@ export async function createActivity(
 
   return result
 }
+
+export async function deleteActivity(
+  activityId: string,
+) {
+  const response = await fetch(API_URL, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'text/plain;charset=utf-8',
+    },
+    body: JSON.stringify({
+      action: 'deleteActivity',
+      activityId,
+    }),
+  })
+
+  if (!response.ok) {
+    throw new Error(`API error: ${response.status}`)
+  }
+
+  const result = await response.json()
+
+  if (result.ok === false) {
+    throw new Error(result.error || '刪除行程失敗')
+  }
+
+  return result
+}

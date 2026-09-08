@@ -18,6 +18,7 @@ type Props = {
   onSaveActivity: (
     fields: EditableActivityFields,
   ) => Promise<void>
+  onDeleteActivity: () => Promise<void>
   onClose: () => void
 }
 
@@ -36,10 +37,12 @@ export default function DetailSheet({
   routeSteps,
   tickets,
   onSaveActivity,
+  onDeleteActivity,
   onClose,
 }: Props) {
   const [editing, setEditing] = useState(false)
   const [saving, setSaving] = useState(false)
+  const [deleting, setDeleting] = useState(false)
   const [saveError, setSaveError] = useState('')
 
   const [form, setForm] =
@@ -404,6 +407,44 @@ export default function DetailSheet({
                 </div>
               </div>
             ) : null}
+
+            <div className="detail-section delete-section">
+              <button
+                className="delete-activity-button"
+                disabled={deleting}
+                onClick={async () => {
+                  const confirmed = window.confirm(
+                    `確定要刪除「${activity.title}」嗎？\n\n刪除後無法復原。`,
+                  )
+
+                  if (!confirmed) return
+
+                  setDeleting(true)
+                  setSaveError('')
+
+                  try {
+                    await onDeleteActivity()
+                  } catch (error) {
+                    console.error(error)
+                    setSaveError(
+                      '刪除失敗，請確認網路後再試一次。',
+                    )
+                  } finally {
+                    setDeleting(false)
+                  }
+                }}
+              >
+                {deleting
+                  ? '刪除中...'
+                  : '刪除行程'}
+              </button>
+
+              {saveError ? (
+                <p className="edit-error">
+                  {saveError}
+                </p>
+              ) : null}
+            </div>
 
             {tickets.length > 0 ? (
               <div className="detail-section">
