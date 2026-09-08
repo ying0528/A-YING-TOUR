@@ -453,22 +453,36 @@ export default function DetailSheet({
               <div className="detail-section">
                 <h3>我的電子票券</h3>
 
-                {tickets.map((ticket) => (
-                  <a
-                    className="ticket-card"
-                    key={ticket.id}
-                    href={
-                      ticket.fileUrl ||
-                      ticket.originalUrl ||
-                      '#'
-                    }
-                    target="_blank"
-                    rel="noreferrer"
-                  >
-                    <strong>{ticket.name}</strong>
-                    <span>{ticket.type}</span>
-                  </a>
-                ))}
+               {tickets.map((ticket) => {
+  const imageUrl =
+    ticket.fileUrl ||
+    ticket.originalUrl ||
+    ''
+
+  return (
+    <div
+      className="ticket-card"
+      key={ticket.id}
+    >
+      <strong>{ticket.name}</strong>
+      <span>{ticket.type}</span>
+
+      {imageUrl ? (
+        <a
+          href={imageUrl}
+          target="_blank"
+          rel="noreferrer"
+        >
+          <img
+            src={imageUrl}
+            alt={ticket.name}
+            className="ticket-image"
+          />
+        </a>
+      ) : null}
+    </div>
+  )
+})}
               </div>
             ) : null}
           </>

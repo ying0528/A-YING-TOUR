@@ -618,3 +618,11 @@ a { color: inherit; }
   font-weight: 700;
   text-decoration: none;
 }
+.ticket-image {
+  display: block;
+  width: 100%;
+  max-height: 520px;
+  margin-top: 12px;
+  border-radius: 12px;
+  object-fit: contain;
+}
