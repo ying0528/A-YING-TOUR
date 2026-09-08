@@ -110,7 +110,7 @@ function convertData(raw: any): TourData {
       from: optional(row['起點']),
       to: optional(row['終點']),
       direction: optional(row['方向']),
-      note: optional(row['備註']),
+      note: optional(row['說明'] || row['備註']),
     }))
 
   const tickets: Ticket[] = (raw.tickets ?? [])
