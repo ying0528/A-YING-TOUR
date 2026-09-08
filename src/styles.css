@@ -198,6 +198,8 @@ a { color: inherit; }
   max-height: 86vh;
   margin: 0 auto;
   overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
   border-radius: 28px 28px 0 0;
   padding: 10px 18px calc(28px + env(safe-area-inset-bottom));
   background: white;
@@ -213,10 +215,15 @@ a { color: inherit; }
 }
 
 .sheet-head {
+  position: sticky;
+  top: -10px;
+  z-index: 5;
   display: flex;
   justify-content: space-between;
   gap: 12px;
   align-items: start;
+  padding-top: 10px;
+  background: white;
 }
 
 .close-button {
