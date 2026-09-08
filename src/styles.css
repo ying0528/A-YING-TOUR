@@ -321,3 +321,21 @@ a { color: inherit; }
   .topbar { padding-inline: 24px; }
   .date-tabs { padding-inline: 24px; }
 }
+
+.complete-button {
+  width: 100%;
+  border: 0;
+  border-radius: 14px;
+  padding: 14px 16px;
+  margin: 4px 0 12px;
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+  background: #eeeeee;
+  color: #333333;
+}
+
+.complete-button.completed {
+  background: #dcf5e5;
+  color: #176c38;
+}

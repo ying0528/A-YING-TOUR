@@ -2,7 +2,16 @@ import { useEffect, useMemo, useState } from 'react'
 import ActivityCard from './components/ActivityCard'
 import DetailSheet from './components/DetailSheet'
 import TravelerPicker from './components/TravelerPicker'
-import { fetchTourData, loadCachedTourData, type TourData } from './api'
+import {
+  fetchTourData,
+  loadCachedTourData,
+  type TourData,
+} from './api'
+import {
+  isCompleted,
+  saveCompleted,
+  syncPendingStatuses,
+} from './status'
 import type { Activity, Traveler } from './types'
 
 const travelerStorageKey = 'a-ying-tour-traveler'
@@ -26,6 +35,7 @@ function makeDates(activities: Activity[]) {
 
   return unique.map((date) => {
     const [, month, day] = date.split('-')
+
     return {
       date,
       label: `${Number(month)}/${Number(day)}`,
@@ -41,11 +51,16 @@ export default function App() {
   const [loading, setLoading] = useState(!cached)
   const [error, setError] = useState('')
   const [traveler, setTraveler] = useState<Traveler | null>(null)
+
   const [selectedDate, setSelectedDate] = useState(
     cached?.activities?.[0]?.date ?? fallbackDates[0].date,
   )
+
   const [selectedActivity, setSelectedActivity] =
     useState<Activity | null>(null)
+
+  const [statusVersion, setStatusVersion] = useState(0)
+  const [syncing, setSyncing] = useState(false)
 
   useEffect(() => {
     let active = true
@@ -84,11 +99,30 @@ export default function App() {
     if (!data?.travelers?.length) return
 
     const savedId = localStorage.getItem(travelerStorageKey)
+
     const savedTraveler =
       data.travelers.find((item) => item.id === savedId) ?? null
 
     setTraveler(savedTraveler)
   }, [data])
+
+  useEffect(() => {
+    const sync = async () => {
+      try {
+        await syncPendingStatuses()
+      } catch {
+        // 保留佇列，下次有網路再同步
+      }
+    }
+
+    sync()
+
+    window.addEventListener('online', sync)
+
+    return () => {
+      window.removeEventListener('online', sync)
+    }
+  }, [])
 
   const dates = useMemo(
     () => makeDates(data?.activities ?? []),
@@ -119,7 +153,9 @@ export default function App() {
         <main className="content">
           <h2>暫時無法載入</h2>
           <p>{error}</p>
-          <button onClick={() => location.reload()}>重新整理</button>
+          <button onClick={() => location.reload()}>
+            重新整理
+          </button>
         </main>
       </div>
     )
@@ -140,7 +176,9 @@ export default function App() {
   }
 
   const selectedPlace = selectedActivity?.placeId
-    ? data.places.find((place) => place.id === selectedActivity.placeId)
+    ? data.places.find(
+        (place) => place.id === selectedActivity.placeId,
+      )
     : undefined
 
   const selectedRouteSteps = selectedActivity?.routeId
@@ -156,6 +194,38 @@ export default function App() {
           ticket.travelerId === traveler.id,
       )
     : []
+
+  const selectedCompleted = selectedActivity
+    ? isCompleted(traveler.id, selectedActivity.id)
+    : false
+
+  async function handleToggleCompleted() {
+    if (!selectedActivity || !traveler) return
+
+    const nextCompleted = !isCompleted(
+      traveler.id,
+      selectedActivity.id,
+    )
+
+    const promise = saveCompleted(
+      traveler.id,
+      selectedActivity.id,
+      nextCompleted,
+    )
+
+    setStatusVersion((value) => value + 1)
+    setSyncing(true)
+
+    try {
+      await promise
+    } catch {
+      // 已保存在手機，等待恢復網路後補同步
+    } finally {
+      setSyncing(false)
+    }
+  }
+
+  void statusVersion
 
   return (
     <div className="app-shell">
@@ -198,7 +268,9 @@ export default function App() {
           <div>
             <p className="eyebrow">BUSAN 2026</p>
             <h2>
-              {dates.find((item) => item.date === selectedDate)?.label}{' '}
+              {dates.find(
+                (item) => item.date === selectedDate,
+              )?.label}{' '}
               行程
             </h2>
           </div>
@@ -233,6 +305,9 @@ export default function App() {
         place={selectedPlace}
         routeSteps={selectedRouteSteps}
         tickets={selectedTickets}
+        completed={selectedCompleted}
+        syncing={syncing}
+        onToggleCompleted={handleToggleCompleted}
         onClose={() => setSelectedActivity(null)}
       />
     </div>

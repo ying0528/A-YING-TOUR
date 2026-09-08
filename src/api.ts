@@ -154,3 +154,39 @@ export async function fetchTourData(): Promise<TourData> {
   localStorage.setItem(CACHE_KEY, JSON.stringify(data))
   return data
 }
+
+export type StatusItem = {
+  travelerId: string
+  activityId: string
+  completed: boolean
+  note?: string
+}
+
+export async function saveStatus(item: StatusItem) {
+  const response = await fetch(API_URL, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'text/plain;charset=utf-8',
+    },
+    body: JSON.stringify({
+      action: 'saveStatus',
+      travelerId: item.travelerId,
+      activityId: item.activityId,
+      completed: item.completed,
+      note: item.note ?? '',
+      device: 'mobile-web',
+    }),
+  })
+
+  if (!response.ok) {
+    throw new Error(`API error: ${response.status}`)
+  }
+
+  const result = await response.json()
+
+  if (result.ok === false) {
+    throw new Error(result.error || '儲存失敗')
+  }
+
+  return result
+}
