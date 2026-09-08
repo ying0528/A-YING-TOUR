@@ -92,7 +92,7 @@ function convertData(raw: any): TourData {
       id: text(row.place_id),
       name: text(row['名稱'] || row['景點名稱']),
       type: text(row['類型']),
-      intro: optional(row['介紹']),
+      intro: optional(row['簡介']),
       address: optional(row['地址']),
       naverMap: optional(row['Naver Map'] || row['NAVER地圖']),
       googleMaps: optional(row['Google Maps'] || row['Google地圖']),
