@@ -21,7 +21,26 @@ type Props = {
   onDeleteActivity: () => Promise<void>
   onClose: () => void
 }
+function renderTextWithLinks(text: string) {
+  const parts = text.split(/(https?:\/\/[^\s]+)/g)
 
+  return parts.map((part, index) => {
+    if (/^https?:\/\//.test(part)) {
+      return (
+        <a
+          key={index}
+          href={part}
+          target="_blank"
+          rel="noreferrer"
+        >
+          {part}
+        </a>
+      )
+    }
+
+    return part
+  })
+}
 const activityTypes: ActivityType[] = [
   '景點',
   '移動',
@@ -345,14 +364,28 @@ export default function DetailSheet({
                   {place.type}
                 </p>
 
-                {place.intro ? <p>{place.intro}</p> : null}
+                {place.intro ? (
+  <p style={{ whiteSpace: 'pre-wrap' }}>
+    {renderTextWithLinks(place.intro)}
+  </p>
+) : null}
 
                 {place.address ? (
-                  <p>
-                    <strong>地址：</strong>
-                    {place.address}
-                  </p>
-                ) : null}
+  <p>
+    <strong>地址：</strong>
+    {place.naverMap ? (
+      <a
+        href={place.naverMap}
+        target="_blank"
+        rel="noreferrer"
+      >
+        {place.address}
+      </a>
+    ) : (
+      place.address
+    )}
+  </p>
+) : null}
 
                 {place.note ? (
                   <p>
