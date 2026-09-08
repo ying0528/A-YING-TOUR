@@ -452,3 +452,33 @@ a { color: inherit; }
     grid-template-columns: 1fr;
   }
 }
+
+.day-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.add-activity-button {
+  min-height: 38px;
+  padding: 8px 12px;
+  border-radius: 12px;
+  background: #17202a;
+  color: white;
+  font-weight: 800;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+@media (max-width: 390px) {
+  .day-heading {
+    align-items: flex-start;
+  }
+
+  .day-actions {
+    display: grid;
+    justify-items: end;
+  }
+}

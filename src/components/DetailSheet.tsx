@@ -15,9 +15,6 @@ type Props = {
   place?: Place
   routeSteps: RouteStep[]
   tickets: Ticket[]
-  completed: boolean
-  syncing?: boolean
-  onToggleCompleted: () => void
   onSaveActivity: (
     fields: EditableActivityFields,
   ) => Promise<void>
@@ -38,9 +35,6 @@ export default function DetailSheet({
   place,
   routeSteps,
   tickets,
-  completed,
-  syncing,
-  onToggleCompleted,
   onSaveActivity,
   onClose,
 }: Props) {
@@ -298,23 +292,6 @@ export default function DetailSheet({
             >
               ✎ 編輯行程
             </button>
-
-            <button
-              className={`complete-button ${
-                completed ? 'completed' : ''
-              }`}
-              onClick={onToggleCompleted}
-            >
-              {completed
-                ? '✓ 已完成'
-                : '○ 標記為已完成'}
-            </button>
-
-            {syncing ? (
-              <p className="muted small">
-                正在同步...
-              </p>
-            ) : null}
 
             <div className="detail-section">
               <p>

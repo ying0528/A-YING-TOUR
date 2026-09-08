@@ -1,8 +1,10 @@
 import { useEffect, useMemo, useState } from 'react'
 import ActivityCard from './components/ActivityCard'
 import DetailSheet from './components/DetailSheet'
+import AddActivitySheet from './components/AddActivitySheet'
 import TravelerPicker from './components/TravelerPicker'
 import {
+  createActivity,
   fetchTourData,
   loadCachedTourData,
   saveCachedTourData,
@@ -10,12 +12,6 @@ import {
   type EditableActivityFields,
   type TourData,
 } from './api'
-import {
-  isCompleted,
-  mergeRemoteStatuses,
-  saveCompleted,
-  syncPendingStatuses,
-} from './status'
 import type { Activity, Traveler } from './types'
 
 const travelerStorageKey = 'a-ying-tour-traveler'
@@ -63,8 +59,8 @@ export default function App() {
   const [selectedActivity, setSelectedActivity] =
     useState<Activity | null>(null)
 
-  const [statusVersion, setStatusVersion] = useState(0)
-  const [syncing, setSyncing] = useState(false)
+  const [showAddActivity, setShowAddActivity] =
+    useState(false)
 
   useEffect(() => {
     let active = true
@@ -73,9 +69,7 @@ export default function App() {
       .then((fresh) => {
         if (!active) return
 
-        mergeRemoteStatuses(fresh.statuses)
         setData(fresh)
-        setStatusVersion((value) => value + 1)
 
         if (!fresh.activities.some((item) => item.date === selectedDate)) {
           setSelectedDate(
@@ -111,24 +105,6 @@ export default function App() {
 
     setTraveler(savedTraveler)
   }, [data])
-
-  useEffect(() => {
-    const sync = async () => {
-      try {
-        await syncPendingStatuses()
-      } catch {
-        // 保留佇列，下次有網路再同步
-      }
-    }
-
-    sync()
-
-    window.addEventListener('online', sync)
-
-    return () => {
-      window.removeEventListener('online', sync)
-    }
-  }, [])
 
   const dates = useMemo(
     () => makeDates(data?.activities ?? []),
@@ -201,36 +177,6 @@ export default function App() {
       )
     : []
 
-  const selectedCompleted = selectedActivity
-    ? isCompleted(traveler.id, selectedActivity.id)
-    : false
-
-  async function handleToggleCompleted() {
-    if (!selectedActivity || !traveler) return
-
-    const nextCompleted = !isCompleted(
-      traveler.id,
-      selectedActivity.id,
-    )
-
-    const promise = saveCompleted(
-      traveler.id,
-      selectedActivity.id,
-      nextCompleted,
-    )
-
-    setStatusVersion((value) => value + 1)
-    setSyncing(true)
-
-    try {
-      await promise
-    } catch {
-      // 已保存在手機，等待恢復網路後補同步
-    } finally {
-      setSyncing(false)
-    }
-  }
-
   async function handleSaveActivity(
     fields: EditableActivityFields,
   ) {
@@ -285,7 +231,50 @@ export default function App() {
     })
   }
 
-  void statusVersion
+  async function handleCreateActivity(
+    fields: EditableActivityFields,
+  ) {
+    const result = await createActivity(fields)
+
+    const newActivity: Activity = {
+      id: result.activityId,
+      date: fields.date,
+      time: fields.time || undefined,
+      duration:
+        fields.duration === ''
+          ? undefined
+          : fields.duration,
+      type: fields.type,
+      title: fields.title,
+      cost: fields.cost || undefined,
+      note: fields.note || undefined,
+    }
+
+    setSelectedDate(newActivity.date)
+
+    setData((current) => {
+      if (!current) return current
+
+      const next: TourData = {
+        ...current,
+        activities: [
+          ...current.activities,
+          newActivity,
+        ].sort((a, b) => {
+          if (a.date !== b.date) {
+            return a.date.localeCompare(b.date)
+          }
+
+          return (a.time ?? '99:99').localeCompare(
+            b.time ?? '99:99',
+          )
+        }),
+      }
+
+      saveCachedTourData(next)
+      return next
+    })
+  }
 
   return (
     <div className="app-shell">
@@ -335,9 +324,20 @@ export default function App() {
             </h2>
           </div>
 
-          <span className="count-badge">
-            {dayActivities.length} 項
-          </span>
+          <div className="day-actions">
+            <span className="count-badge">
+              {dayActivities.length} 項
+            </span>
+
+            <button
+              className="add-activity-button"
+              onClick={() =>
+                setShowAddActivity(true)
+              }
+            >
+              ＋ 新增行程
+            </button>
+          </div>
         </div>
 
         <div className="timeline">
@@ -365,11 +365,17 @@ export default function App() {
         place={selectedPlace}
         routeSteps={selectedRouteSteps}
         tickets={selectedTickets}
-        completed={selectedCompleted}
-        syncing={syncing}
-        onToggleCompleted={handleToggleCompleted}
         onSaveActivity={handleSaveActivity}
         onClose={() => setSelectedActivity(null)}
+      />
+
+      <AddActivitySheet
+        open={showAddActivity}
+        defaultDate={selectedDate}
+        onSave={handleCreateActivity}
+        onClose={() =>
+          setShowAddActivity(false)
+        }
       />
     </div>
   )
