@@ -63,6 +63,9 @@ export default function App() {
   const [showAddActivity, setShowAddActivity] =
     useState(false)
 
+  const [activeTab, setActiveTab] =
+    useState<'itinerary' | 'places'>('itinerary')
+
   useEffect(() => {
     let active = true
 
@@ -321,24 +324,52 @@ export default function App() {
         </button>
       </header>
 
-      <nav className="date-tabs" aria-label="日期">
-        {dates.map((item) => (
-          <button
-            key={item.date}
-            className={
-              selectedDate === item.date
-                ? 'date-tab active'
-                : 'date-tab'
-            }
-            onClick={() => setSelectedDate(item.date)}
-          >
-            <strong>{item.label}</strong>
-            <span>週{item.weekday}</span>
-          </button>
-        ))}
+      <nav className="main-tabs" aria-label="主要功能">
+        <button
+          className={
+            activeTab === 'itinerary'
+              ? 'main-tab active'
+              : 'main-tab'
+          }
+          onClick={() => setActiveTab('itinerary')}
+        >
+          行程
+        </button>
+
+        <button
+          className={
+            activeTab === 'places'
+              ? 'main-tab active'
+              : 'main-tab'
+          }
+          onClick={() => setActiveTab('places')}
+        >
+          景點
+        </button>
       </nav>
 
+      {activeTab === 'itinerary' ? (
+        <nav className="date-tabs" aria-label="日期">
+          {dates.map((item) => (
+            <button
+              key={item.date}
+              className={
+                selectedDate === item.date
+                  ? 'date-tab active'
+                  : 'date-tab'
+              }
+              onClick={() => setSelectedDate(item.date)}
+            >
+              <strong>{item.label}</strong>
+              <span>週{item.weekday}</span>
+            </button>
+          ))}
+        </nav>
+      ) : null}
+
       <main className="content">
+        {activeTab === 'itinerary' ? (
+          <>
         <div className="day-heading">
           <div>
             <p className="eyebrow">BUSAN 2026</p>
@@ -384,6 +415,87 @@ export default function App() {
             )
           })}
         </div>
+          </>
+        ) : (
+          <section className="places-page">
+            <div className="places-heading">
+              <div>
+                <p className="eyebrow">PLACE LIBRARY</p>
+                <h2>景點資料</h2>
+              </div>
+
+              <span className="count-badge">
+                {data.places.length} 個
+              </span>
+            </div>
+
+            <div className="places-list">
+              {data.places.map((place) => (
+                <article
+                  className="place-card"
+                  key={place.id}
+                >
+                  <div className="place-card-head">
+                    <div>
+                      <span className="place-type">
+                        {place.type || '其他'}
+                      </span>
+                      <h3>{place.name}</h3>
+                    </div>
+
+                    <span className="place-id">
+                      {place.id}
+                    </span>
+                  </div>
+
+                  {place.address ? (
+                    <p className="place-address">
+                      {place.address}
+                    </p>
+                  ) : null}
+
+                  {place.intro ? (
+                    <p className="place-intro">
+                      {place.intro}
+                    </p>
+                  ) : null}
+
+                  <div className="place-links">
+                    {place.naverMap ? (
+                      <a
+                        href={place.naverMap}
+                        target="_blank"
+                        rel="noreferrer"
+                      >
+                        Naver Map
+                      </a>
+                    ) : null}
+
+                    {place.googleMaps ? (
+                      <a
+                        href={place.googleMaps}
+                        target="_blank"
+                        rel="noreferrer"
+                      >
+                        Google Maps
+                      </a>
+                    ) : null}
+
+                    {place.website ? (
+                      <a
+                        href={place.website}
+                        target="_blank"
+                        rel="noreferrer"
+                      >
+                        官方網站
+                      </a>
+                    ) : null}
+                  </div>
+                </article>
+              ))}
+            </div>
+          </section>
+        )}
       </main>
 
       <DetailSheet

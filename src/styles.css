@@ -503,3 +503,118 @@ a { color: inherit; }
   opacity: 0.55;
   cursor: default;
 }
+
+/* ===== 主功能分頁 ===== */
+
+.main-tabs {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+  margin: 0 16px 12px;
+  padding: 5px;
+  border-radius: 16px;
+  background: #f1f3f5;
+}
+
+.main-tab {
+  min-height: 44px;
+  border: 0;
+  border-radius: 12px;
+  background: transparent;
+  font-size: 15px;
+  font-weight: 800;
+  color: #667085;
+  cursor: pointer;
+}
+
+.main-tab.active {
+  background: #ffffff;
+  color: #111827;
+  box-shadow: 0 2px 8px rgba(16, 24, 40, 0.08);
+}
+
+
+/* ===== 景點資料 ===== */
+
+.places-page {
+  padding-bottom: 32px;
+}
+
+.places-heading {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 18px;
+}
+
+.places-heading h2 {
+  margin: 4px 0 0;
+}
+
+.places-list {
+  display: grid;
+  gap: 12px;
+}
+
+.place-card {
+  padding: 16px;
+  border: 1px solid #e7e9ee;
+  border-radius: 18px;
+  background: #ffffff;
+  box-shadow: 0 4px 14px rgba(16, 24, 40, 0.05);
+}
+
+.place-card-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.place-card h3 {
+  margin: 6px 0 0;
+  font-size: 17px;
+  line-height: 1.4;
+}
+
+.place-type {
+  display: inline-flex;
+  padding: 4px 8px;
+  border-radius: 999px;
+  background: #f2f4f7;
+  color: #475467;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.place-id {
+  color: #98a2b3;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.place-address,
+.place-intro {
+  margin: 12px 0 0;
+  color: #667085;
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.place-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 14px;
+}
+
+.place-links a {
+  padding: 8px 11px;
+  border-radius: 10px;
+  background: #f5f7fa;
+  color: #344054;
+  font-size: 13px;
+  font-weight: 700;
+  text-decoration: none;
+}
