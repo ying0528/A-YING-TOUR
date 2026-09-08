@@ -97,7 +97,7 @@ function convertData(raw: any): TourData {
       naverMap: optional(row['Naver Map'] || row['NAVER地圖']),
       googleMaps: optional(row['Google Maps'] || row['Google地圖']),
       website: optional(row['官網'] || row['網站']),
-      note: optional(row['備註']),
+      note: optional(row['說明']),
     }))
 
   const routeSteps: RouteStep[] = (raw.routes ?? [])
