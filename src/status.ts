@@ -103,3 +103,34 @@ export async function syncPendingStatuses() {
 
   writeQueue(remaining)
 }
+
+export function mergeRemoteStatuses(
+  statuses: Array<{
+    travelerId: string
+    activityId: string
+    completed: boolean
+  }>,
+) {
+  const map = readMap()
+  const queue = readQueue()
+
+  const pendingKeys = new Set(
+    queue.map((item) =>
+      key(item.travelerId, item.activityId),
+    ),
+  )
+
+  for (const item of statuses) {
+    const itemKey = key(
+      item.travelerId,
+      item.activityId,
+    )
+
+    // 手機有尚未同步的操作時，以手機的新狀態為準。
+    if (pendingKeys.has(itemKey)) continue
+
+    map[itemKey] = item.completed
+  }
+
+  writeMap(map)
+}

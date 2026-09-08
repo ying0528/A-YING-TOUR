@@ -10,12 +10,20 @@ import type {
 export const API_URL =
   'https://script.google.com/macros/s/AKfycbyrA0WvAYZhuCDp8rrdndt3mGRCxL-tg8nUWI-lsQj8zYCt1mzRkWDdUQ3AOC78qhfs8w/exec'
 
+export type RemoteStatus = {
+  travelerId: string
+  activityId: string
+  completed: boolean
+  updatedAt?: string
+}
+
 export type TourData = {
   travelers: Traveler[]
   activities: Activity[]
   places: Place[]
   routeSteps: RouteStep[]
   tickets: Ticket[]
+  statuses: RemoteStatus[]
   tripName: string
   updatedAt?: string
 }
@@ -118,12 +126,24 @@ function convertData(raw: any): TourData {
       note: optional(row['備註']),
     }))
 
+  const statuses: RemoteStatus[] = (raw.status ?? [])
+    .filter((row: any) => text(row.traveler_id))
+    .filter((row: any) => text(row.activity_id))
+    .map((row: any) => ({
+      travelerId: text(row.traveler_id),
+      activityId: text(row.activity_id),
+      completed:
+        text(row['已完成']).toUpperCase() === 'TRUE',
+      updatedAt: optional(row['更新時間']),
+    }))
+
   return {
     travelers,
     activities,
     places,
     routeSteps,
     tickets,
+    statuses,
     tripName: text(raw.trip?.[0]?.['旅程名稱']) || 'A Ying Tour',
     updatedAt: raw.updatedAt,
   }

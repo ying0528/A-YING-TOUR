@@ -9,6 +9,7 @@ import {
 } from './api'
 import {
   isCompleted,
+  mergeRemoteStatuses,
   saveCompleted,
   syncPendingStatuses,
 } from './status'
@@ -69,7 +70,9 @@ export default function App() {
       .then((fresh) => {
         if (!active) return
 
+        mergeRemoteStatuses(fresh.statuses)
         setData(fresh)
+        setStatusVersion((value) => value + 1)
 
         if (!fresh.activities.some((item) => item.date === selectedDate)) {
           setSelectedDate(
